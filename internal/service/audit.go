@@ -22,7 +22,11 @@ func NewAuditService(storage *storage.Storage) *AuditService {
 func (s *AuditService) Log(msg amqp.Delivery) error {
 	var item audit.LogItem
 
-	json.Unmarshal(msg.Body, &item)
+	err := json.Unmarshal(msg.Body, &item)
+
+	if err != nil {
+		return err
+	}
 
 	return s.storage.Insert(context.TODO(), item)
 }

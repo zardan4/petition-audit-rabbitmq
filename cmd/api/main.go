@@ -12,7 +12,7 @@ import (
 	server "github.com/zardan4/petition-audit-rabbitmq/internal/server/mq"
 	"github.com/zardan4/petition-audit-rabbitmq/internal/service"
 	storage "github.com/zardan4/petition-audit-rabbitmq/internal/storage/mongo"
-	errhand "github.com/zardan4/petition-audit-rabbitmq/pkg/core/error"
+	errhand "github.com/zardan4/petition-audit-rabbitmq/pkg/error"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"go.mongodb.org/mongo-driver/mongo/readpref"
@@ -47,7 +47,7 @@ func main() {
 	if err != nil {
 		logrus.Fatal(err)
 	}
-	defer client.Disconnect(ctx)
+	defer client.Disconnect(ctx) // nolint:errcheck
 
 	err = client.Ping(ctx, readpref.Primary())
 	if err != nil {
@@ -65,7 +65,12 @@ func main() {
 	fmt.Printf("Server started at %s", time.Now())
 
 	// serve all mqs
-	if err := srv.ListenAndServe(); err != nil {
+	if err := srv.ListenAndServe(cfg.MQ.MQNames); err != nil {
 		log.Fatal(err)
 	}
+
+	// listening when to end
+	forever := make(chan bool)
+
+	<-forever
 }

@@ -2,7 +2,6 @@ package server
 
 import (
 	amqp "github.com/rabbitmq/amqp091-go"
-	"github.com/spf13/viper"
 	"github.com/zardan4/petition-audit-rabbitmq/internal/service"
 )
 
@@ -18,9 +17,9 @@ func NewAuditServer(service *service.Service, ch *amqp.Channel) *AuditServer {
 	}
 }
 
-func (s *AuditServer) ListenAndServe() error {
+func (s *AuditServer) CreateQueueConsumer(qName string) (<-chan amqp.Delivery, error) {
 	q, err := s.ch.QueueDeclare(
-		viper.GetString("queues.logs"),
+		qName,
 		false,
 		false,
 		false,
@@ -28,7 +27,7 @@ func (s *AuditServer) ListenAndServe() error {
 		nil,
 	)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	msgs, err := s.ch.Consume(
@@ -40,21 +39,8 @@ func (s *AuditServer) ListenAndServe() error {
 		false,
 		nil,
 	)
-	if err != nil {
-		return err
-	}
 
-	forever := make(chan bool, 1)
-
-	go func() {
-		for m := range msgs {
-			s.Log(m)
-		}
-	}()
-
-	<-forever
-
-	return nil
+	return msgs, err
 }
 
 func (s *AuditServer) Log(del amqp.Delivery) error {
