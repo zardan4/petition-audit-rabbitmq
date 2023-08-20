@@ -5,8 +5,8 @@ import (
 )
 
 type LogItem struct {
-	Entity    string    `bson:"entity"`
-	Action    string    `bson:"action"`
-	EntityID  int64     `bson:"entity_id"`
-	Timestamp time.Time `bson:"timestamp"`
+	Entity    string    `json:"entity" bson:"entity"`
+	Action    string    `json:"action" bson:"action"`
+	EntityID  int64     `json:"entity_id" bson:"entity_id"`
+	Timestamp time.Time `json:"timestamp" bson:"timestamp"`
 }
